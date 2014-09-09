@@ -12,8 +12,10 @@ import (
 	"github.com/docker/libcontainer/system"
 )
 
+var controlPipe = os.NewFile(3, "ctrl")
+
 func main() {
-	if err := serveCommands(os.Stdin); err != nil {
+	if err := serveCommands(controlPipe); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
@@ -79,6 +81,9 @@ func doExec(args ...string) error {
 		if err != nil {
 			return err
 		}
+	}
+	if controlPipe != nil {
+		controlPipe.Close()
 	}
 	return syscall.Exec(cmdName, args, os.Environ())
 }
